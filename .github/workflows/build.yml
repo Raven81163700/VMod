@@ -41,7 +41,11 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Make Gradle wrappers executable
-        run: chmod +x gradlew vs2/gradlew
+        run: chmod +x gradlew vs2/gradlew Valkyrien-Ship-Schematics/gradlew
+
+      - name: Publish VSS 2.0 to Maven local
+        working-directory: Valkyrien-Ship-Schematics
+        run: ./gradlew :common:publishToMavenLocal :fabric:publishToMavenLocal :forge:publishToMavenLocal --no-daemon
 
       - name: Publish VS2 2.5.0 to Maven local
         working-directory: vs2
