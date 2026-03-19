@@ -123,7 +123,16 @@ object VM {
         VMItems.register()
         VMEntities.register()
 
-        CommandRegistrationEvent.EVENT.register { it, _, _-> VMCommands.registerServerCommands(it) }
+        CommandRegistrationEvent.EVENT.register { it, _, _ ->
+            VMCommands.registerServerCommands(it)
+            if (Platform.isModLoaded("valkyrienskies")) {
+                try {
+                    VMCommands.registerVSServerCommands(it)
+                } catch (e: Throwable) {
+                    WLOG("Failed to register VS-dependent commands: ${e.message}")
+                }
+            }
+        }
 
         makeEvents()
     }
