@@ -45,7 +45,7 @@ jobs:
 
       - name: Publish VS2 2.5.0 to Maven local
         working-directory: vs2
-        run: ./gradlew :common:publishToMavenLocal :fabric:publishToMavenLocal :forge:publishToMavenLocal -PCustomReleaseVersion=2.5.0 --no-daemon
+        run: ./gradlew :common:publishToMavenLocal :fabric:publishToMavenLocal :forge:publishToMavenLocal -PCustomReleaseVersion=release/2.5.0 --no-daemon
 
       - name: Build VMod
         run: ./gradlew build --no-daemon
