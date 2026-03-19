@@ -55,8 +55,8 @@ import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.core.api.ships.Ship
 import org.valkyrienskies.core.api.ships.properties.ChunkClaim
 import org.valkyrienskies.core.api.ships.properties.ShipId
-import org.valkyrienskies.mod.common.command.RelativeVector3Argument
-import org.valkyrienskies.mod.common.command.ShipArgument
+import org.valkyrienskies.mod.common.command.arguments.RelativeVector3Argument
+import org.valkyrienskies.mod.common.command.arguments.ShipArgument
 import org.valkyrienskies.mod.common.command.shipWorld
 import org.valkyrienskies.mod.common.dimensionId
 import org.valkyrienskies.mod.common.getShipManagingPos
@@ -454,6 +454,55 @@ object VMCommands {
             lt("vmod")
             .requires { it.hasPermission(permissionLevel) || hasPermission(it) }
             .then(
+                lt("schem")
+                .then(
+                    lt("save-to-sever").then(
+                        arg("name", StringArgumentType.string()).executes { saveSchemToServer(it) }
+                    )
+                ).then(
+                    lt("load-from-sever").then(
+                        arg("name", StringArgumentType.string()).executes { loadSchemFromServer(it) }
+                    )
+                )
+            ).then(
+                lt("op")
+                .requires { it.hasPermission(VMConfig.SERVER.PERMISSIONS.VMOD_OP_COMMANDS_PERMISSION_LEVEL) }
+                .then(
+                    lt("set-command-permission-level").then(
+                        arg("level", IntegerArgumentType.integer(0, 4)).executes {
+                            permissionLevel = IntegerArgumentType.getInteger(it, "level")
+                            0
+                        }
+                    )
+                )
+            ).also {
+                if (!Platform.isDevelopmentEnvironment()) return@also
+                it.then(
+                    lt("debug")
+                        .then(
+                            lt("remove-debug-renderers").executes {
+                                DEBUG.clearDebugRenderers(it)
+                            }
+                        ).then(
+                            lt("test-gif-loader").executes {
+                                DEBUG.testGIFLoader(it)
+                            }
+                        ).then(
+                            lt("call-gc").executes {
+                                System.gc()
+                                0
+                            }
+                        )
+                )
+            }
+        )
+    }
+
+    fun registerVSServerCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
+        dispatcher.register(
+            lt("vmod")
+            .requires { it.hasPermission(permissionLevel) || hasPermission(it) }
+            .then(
                 lt("teleport").then(
                     arg("ship", ShipArgument.ships()).then(
                         arg("position", Vec3Argument.vec3()).executes { teleportCommand(it) }.then(
@@ -481,14 +530,6 @@ object VMCommands {
             ).then(
                 lt("schem")
                 .then(
-                    lt("save-to-sever").then(
-                        arg("name", StringArgumentType.string()).executes { saveSchemToServer(it) }
-                    )
-                ).then(
-                    lt("load-from-sever").then(
-                        arg("name", StringArgumentType.string()).executes { loadSchemFromServer(it) }
-                    )
-                ).then(
                     lt("place").then(
                         arg("position", Vec3Argument.vec3()).executes { placeServerSchematic(it, true) }.then(
                             arg("rotation", RelativeVector3Argument.relativeVector3()).executes { placeServerSchematic(it, true) }.then(
@@ -557,13 +598,6 @@ object VMCommands {
             ).then(
                 lt("op")
                 .requires { it.hasPermission(VMConfig.SERVER.PERMISSIONS.VMOD_OP_COMMANDS_PERMISSION_LEVEL) }
-                .then(
-                    lt("set-command-permission-level").then(
-                        arg("level", IntegerArgumentType.integer(0, 4)).executes {
-                            permissionLevel = IntegerArgumentType.getInteger(it, "level")
-                            0
-                        }
-                    )
 //                ).then(
 //                    lt("set-dimension-gravity").then(
 //                        arg("dimension", DimensionArgument.dimension()).then(
@@ -577,30 +611,11 @@ object VMCommands {
 //                            )
 //                        )
 //                    )
-                ).then(lt("clear-vmod-attachments").executes { OP.clearVmodAttachments(it) }
+                .then(lt("clear-vmod-attachments").executes { OP.clearVmodAttachments(it) }
 //                ).then(lt("delete-phys-entities").executes { OP.deletePhysEntities(it) }
                 ).then(lt("prune-shipyard-chunks").executes { OP.pruneShipyardChunks(it) }
                 )
-            ).also {
-                if (!Platform.isDevelopmentEnvironment()) return@also
-                it.then(
-                    lt("debug")
-                        .then(
-                            lt("remove-debug-renderers").executes {
-                                DEBUG.clearDebugRenderers(it)
-                            }
-                        ).then(
-                            lt("test-gif-loader").executes {
-                                DEBUG.testGIFLoader(it)
-                            }
-                        ).then(
-                            lt("call-gc").executes {
-                                System.gc()
-                                0
-                            }
-                        )
-                )
-            }
+            )
         )
     }
 }
